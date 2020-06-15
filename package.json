@@ -2,7 +2,7 @@
     "name": "role-bot",
     "version": "1.0.0",
     "description": "This bot adds competitive role on someone depending on what other role they have previously selected based on reaction to an emoji",
-    "main": "bot.js",
+    "main": "bot.mjs",
     "author": "Lucy L",
     "dependencies": {
         "discord.js": "^12.2.0"
