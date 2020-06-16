@@ -1,7 +1,7 @@
 import Discord from 'discord.js'
 import fs from 'fs'
 import util from 'util'
-import { devRoles as rolesList } from './roles.mjs'
+import {roles as rolesList } from './roles.mjs'
 
 // const reactEmoji = "722248806732660796"
 const reactEmoji = "722166920324972659"
