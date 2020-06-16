@@ -1,10 +1,12 @@
 import Discord from 'discord.js'
 import fs from 'fs'
 import util from 'util'
-import {roles, devRoles} from './roles.mjs'
+import { devRoles as rolesList } from './roles.mjs'
 
+// const reactEmoji = "722248806732660796"
+const reactEmoji = "722166920324972659"
 const client = new Discord.Client({
-	partials:["MESSAGE", "REACTION"]
+	partials: ["MESSAGE", "REACTION"]
 });
 //Promisifies reading and writing to the files
 const writeFilePromise = util.promisify(fs.writeFile)
@@ -14,14 +16,14 @@ let config;
 let messageID;
 
 //Displays a message in the terminal once the bot is online/ready
-client.once('ready', async() => {
+client.once('ready', async () => {
 	console.log('Ready!');
 	try {
 		let messageIDBuffer = await readFilePromise("messageID.txt")
 		messageID = messageIDBuffer.toString();
 		console.log('Found old message', messageID)
 	} catch (err) {
-		
+
 	}
 });
 
@@ -32,16 +34,17 @@ fs.readFile('config.json', (err, data) => {
 });
 
 
-
+let messageContent = "React below for the Competitive role. You'll gain access to the Competitive LFG channels pertaining to your region role!"
 
 client.on('message', async (message) => {
-	if (message.member.id != "262852578465808386"){
+	if (message.member.id != "262852578465808386" && message.member.id != "165001528900452353") {
 		return;
 	}
-	if (message.content === '!ping') {
-		var botMessage = await message.channel.send('Pong');
+
+	if (message.content === '!post') {
+		var botMessage = await message.channel.send(messageContent);
 		messageID = botMessage.id;
-		
+
 		try {
 			await writeFilePromise("messageID.txt", botMessage.id)
 		} catch (err) {
@@ -49,33 +52,55 @@ client.on('message', async (message) => {
 				throw err;
 		}
 
-		botMessage.react('😄')
+		botMessage.react(reactEmoji)
+	}
+
+	if (message.content.startsWith("!config ")){
+		messageContent = message.content.substr(7)
 	}
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
-	console.log(messageReaction.message.id, messageID)
-	if (messageReaction.message.id != messageID){
+	if (messageReaction.message.id != messageID) {
 		return;
 	}
+
+	if (messageReaction.emoji.id != reactEmoji) {
+		messageReaction.remove()
+
+		if (messageReaction.emoji.toString() != '🤦‍♀️')
+			messageReaction.message.react("🤦‍♀️")
+
+		return
+	}
+
 
 	if (user === client.user) return
 
 	const guild = messageReaction.message.guild;
 	const member = await guild.members.fetch(user.id);
 
-	console.log("Checking user for roles in devRoles HEHEHE")
+	console.log("Checking user for roles in rolesList HEHEHE")
 
-	console.log(devRoles['NA']);
-
-	for (let location in devRoles) {
+	for (let location in rolesList) {
 		console.log(`Checking if user has ${location}`);
-		
-		const role = devRoles[location];
+
+		const role = rolesList[location];
 		if (member._roles.includes(role.id)) {
 			member.roles.add(role.comp)
 			return;
 		}
-		
 	}
+})
+
+client.on("messageReactionRemove", async (messageReaction, user) => {
+	if (messageReaction.message.id != messageID) {
+		return;
+	}
+	if (user === client.user) return
+	const guild = messageReaction.message.guild;
+	const member = await guild.members.fetch(user.id);
+	let roleValues = Object.values(rolesList)
+	let compRoleIDs = roleValues.map(removeRole => removeRole.comp)
+	member.roles.remove(compRoleIDs)
 })
