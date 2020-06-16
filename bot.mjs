@@ -3,8 +3,10 @@ import fs from 'fs'
 import util from 'util'
 import {roles, devRoles} from './roles.mjs'
 
-const client = new Discord.Client();
-
+const client = new Discord.Client({
+	partials:["MESSAGE", "REACTION"]
+});
+//Promisifies reading and writing to the files
 const writeFilePromise = util.promisify(fs.writeFile)
 const readFilePromise = util.promisify(fs.readFile)
 
@@ -15,7 +17,9 @@ let messageID;
 client.once('ready', async() => {
 	console.log('Ready!');
 	try {
-		messageID = await readFilePromise("messageID.txt")
+		let messageIDBuffer = await readFilePromise("messageID.txt")
+		messageID = messageIDBuffer.toString();
+		console.log('Found old message', messageID)
 	} catch (err) {
 		
 	}
@@ -50,8 +54,9 @@ client.on('message', async (message) => {
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
+	console.log(messageReaction.message.id, messageID)
 	if (messageReaction.message.id != messageID){
-	return;
+		return;
 	}
 
 	if (user === client.user) return
@@ -59,9 +64,18 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 	const guild = messageReaction.message.guild;
 	const member = await guild.members.fetch(user.id);
 
-	for (let index = 0; index < devRoles.length; index++) {
-		const role = devRoles[index];
+	console.log("Checking user for roles in devRoles HEHEHE")
+
+	console.log(devRoles['NA']);
+
+	for (let location in devRoles) {
+		console.log(`Checking if user has ${location}`);
 		
+		const role = devRoles[location];
+		if (member._roles.includes(role.id)) {
+			member.roles.add(role.comp)
+			return;
+		}
 		
 	}
 })
