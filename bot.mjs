@@ -4,7 +4,7 @@ import util from 'util'
 import {roles as rolesList } from './roles.mjs'
 
 // const reactEmoji = "722248806732660796"
-const reactEmoji = "722166920324972659"
+const reactEmoji = "724735932544188448"
 const client = new Discord.Client({
 	partials: ["MESSAGE", "REACTION"]
 });
